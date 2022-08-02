@@ -21,8 +21,6 @@ if __name__ == '__main__':
                 del review.rating
 
                 all_reviews.append(review)
-                break
-            break
 
         res = Reviews(reviews=all_reviews)
 
