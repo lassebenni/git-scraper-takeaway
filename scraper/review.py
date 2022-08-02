@@ -26,6 +26,7 @@ headers = {
     'Sec-Fetch-Mode': 'cors',
     'Sec-Fetch-Site': 'cross-site',
     'TE': 'trailers',
+    'Cookie': '__cf_bm=uCRKXYHao_w8eM0sXunMW0Ix8TH7CosSzn.9jXjhQko-1659476159-0-AbQWQX/i1/iB4lplWr24sLb+DBNiZi7HgMN69JrMyBG6jow7wM3ORuQl2ZwQhchCiEc3aljbR+w7dFEwu7/ZgiCv8ioAtVJG+sX+u5k7dSce'
 }
 
 def scrape_reviews(restaurant_id: str) -> list[Reviews]:
