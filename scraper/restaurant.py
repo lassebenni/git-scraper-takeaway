@@ -28,6 +28,7 @@ headers = {
 
 def scrape_restaurants() -> list[Restaurant]:
     response = requests.request("GET", url, headers=headers, data=payload)
+    print(response.status_code)
     restaurants_json = json.loads(response.text)['restaurants']
 
     return [Restaurant(**restaurants_json[val]) for k, val in enumerate(restaurants_json)]
