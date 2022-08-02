@@ -1,31 +1,22 @@
-import requests
-import json
+from scraper.restaurant import scrape_restaurants
+from scraper.review import scrape_reviews
 
-url = "https://cw-api.takeaway.com/api/v31/restaurants?deliveryAreaId=936874&postalCode=3511&lat=52.08944030000001&lng=5.1099869&limit=0&isAccurate=false"
+from models.reviews import Reviews
 
-payload={}
-headers = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:102.0) Gecko/20100101 Firefox/102.0',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en',
-    'Accept-Encoding': 'gzip, deflate, br',
-    'Referer': 'https://www.thuisbezorgd.nl/',
-    'X-Language-Code': 'en',
-    'X-Country-Code': 'nl',
-    'X-Session-ID': '8070b889-a1bc-4205-a2cc-4aed0a3c8e50',
-    'X-Requested-With': 'XMLHttpRequest',
-    'Origin': 'https://www.thuisbezorgd.nl',
-    'Connection': 'keep-alive',
-    'Sec-Fetch-Dest': 'empty',
-    'Sec-Fetch-Mode': 'cors',
-    'Sec-Fetch-Site': 'cross-site',
-    'TE': 'trailers',
-    'Cookie': '__cf_bm=VthKD.EertRh30SheMdiRtk8nOEya9_wMqymvmyT5Qg-1659468095-0-ASKMDZSW+hnKw1B4NRPjLVigazSp4UbzC1MXNINpjAY20A+jtRyPtdxu1/U7yp9nfbJ0SAklaEvyIcyZi8C0GKrr3q2STvdUPLsgPB8y+BRX'
-}
+if __name__ == '__main__':
+    restaurants = scrape_restaurants()
+    all_reviews = []
+    for restaurant in restaurants:
+        reviews = scrape_reviews(restaurant.id)
 
-response = requests.request("GET", url, headers=headers, data=payload)
-restaurants = json.loads(response.text)['restaurants']
+        for review in reviews.reviews:
+            if review.comment == "":
+                continue
 
-with open('restaurants.json','w') as f:
-    f.write(json.dumps(restaurants))
-    
+            review.restaurant_name = restaurant.primary_slug
+            all_reviews.append(review)
+
+    res = Reviews(reviews=all_reviews)
+
+    with open('data/reviews.json', 'w') as f:
+        f.write(res.json())

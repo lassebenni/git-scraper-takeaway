@@ -1,0 +1,36 @@
+name: Scraper reviews
+on:
+  push:
+  workflow_dispatch:
+  schedule:
+    - cron: "05 7 * * *" # every day at 7:05 am
+
+jobs:
+  scheduled:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
+        os: [ubuntu-18.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/cache@v2
+      name: Configure pip caching
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+      - run: pip install -r requirements.txt
+      - name: run main.py
+        run: |
+          python main.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: lassebenni/publish-to-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub sets this for you 
