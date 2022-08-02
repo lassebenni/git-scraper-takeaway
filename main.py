@@ -14,6 +14,10 @@ if __name__ == '__main__':
                 continue
 
             review.restaurant_name = restaurant.primary_slug
+            review.rating_food = review.rating.food
+            review.rating_delivery = review.rating.delivery
+            del review.rating
+
             all_reviews.append(review)
 
     res = Reviews(reviews=all_reviews)
