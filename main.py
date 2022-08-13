@@ -1,5 +1,4 @@
 import json
-from scraper.restaurant import scrape_restaurants
 from scraper.review import scrape_reviews
 
 from models.reviews import Reviews
@@ -11,7 +10,7 @@ if __name__ == "__main__":
         for restaurant_id, restaurant_name in mapping.items():
             reviews = scrape_reviews(restaurant_id)
 
-            for review in reviews.reviews:
+            for review in reviews:
                 if review.comment == "":
                     continue
 

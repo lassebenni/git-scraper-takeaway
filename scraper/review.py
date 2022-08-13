@@ -1,5 +1,7 @@
+import time
 import requests
 import json
+import itertools
 
 from models.reviews import Reviews
 
@@ -31,8 +33,30 @@ headers = {
 
 
 def scrape_reviews(restaurant_id: str) -> list[Reviews]:
-    url = f"https://cw-api.takeaway.com/api/v31/restaurant/reviews?id={restaurant_id}&page=0"
-    response = requests.request("GET", url, headers=headers, data=payload)
-    reviews_json = json.loads(response.text)
+    reviews = []
 
-    return Reviews(**reviews_json)
+    page = 0
+    scraped_all = False
+    while not scraped_all:
+        url = f"https://cw-api.takeaway.com/api/v31/restaurant/reviews?id={restaurant_id}&page={page}"
+        response = requests.request("GET", url, headers=headers, data=payload)
+
+        if response:
+            reviews_json = json.loads(response.text)
+            if reviews_json["reviews"]:
+                reviews.append(Reviews(**reviews_json))
+                page += 1
+                time.sleep(1)
+            else:
+                scraped_all = True
+        else:
+            scraped_all = True
+
+    # flatten into single list
+    reviews = flatten([x.reviews for x in reviews])
+
+    return reviews
+
+
+def flatten(list_of_lists):
+    return list(itertools.chain.from_iterable(list_of_lists))
