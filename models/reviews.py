@@ -21,10 +21,11 @@ class Review(BaseModel):
     comment: Optional[str]
     date: Optional[datetime]
     time: Optional[str]
-    is_sunday: Optional[bool] = Field(alias='isSunday')
-    is_pickup: Optional[bool] = Field( alias='isPickup')
-    is_new_year: Optional[bool] = Field( alias='isNewYear')
+    is_sunday: Optional[bool] = Field(alias="isSunday")
+    is_pickup: Optional[bool] = Field(alias="isPickup")
+    is_new_year: Optional[bool] = Field(alias="isNewYear")
     restaurant_name: Optional[str]
 
+
 class Reviews(BaseModel):
-    reviews : List[Review]
+    reviews: List[Review]

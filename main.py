@@ -4,11 +4,11 @@ from scraper.review import scrape_reviews
 
 from models.reviews import Reviews
 
-if __name__ == '__main__':
-    with open('data/mapping.json', 'r') as f:
+if __name__ == "__main__":
+    with open("data/mapping.json", "r") as f:
         mapping = json.load(f)
         all_reviews = []
-        for restaurant_id,restaurant_name in mapping.items():
+        for restaurant_id, restaurant_name in mapping.items():
             reviews = scrape_reviews(restaurant_id)
 
             for review in reviews.reviews:
@@ -24,5 +24,5 @@ if __name__ == '__main__':
 
         res = Reviews(reviews=all_reviews)
 
-        with open('data/reviews.json', 'w') as f:
+        with open("data/reviews.json", "w") as f:
             f.write(res.json())
