@@ -5,6 +5,9 @@ from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field
 from uuid import UUID, uuid4
+import pandas as pd
+
+from utils.aws import store_as_parquet
 
 
 class Rating(BaseModel):
@@ -29,3 +32,15 @@ class Review(BaseModel):
 
 class Reviews(BaseModel):
     reviews: List[Review]
+    ingestion_date: datetime = datetime.today().strftime("%d-%m-%y")
+
+    def _to_dataframe(self) ->pd.DataFrame:
+        df = pd.DataFrame.from_dict([x.dict() for x in self.reviews])
+        df['ingestion_date'] = self.ingestion_date
+        df['uid'] = df['uid'].astype(str)
+        return df
+
+
+    def store_as_parquet(self, bucket: str, path: str, partitions: list[str] = ['ingestion_date']):
+        df = self._to_dataframe()
+        store_as_parquet(df=df, bucket=bucket, path=path, partitions=partitions)
