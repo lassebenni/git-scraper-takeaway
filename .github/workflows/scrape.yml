@@ -1,8 +1,9 @@
 name: Scraper reviews
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "05 7 * * *" # every day at 7:05 am
+  schedule:
+    - cron: "5 4 * * 1" # “At 04:05 on Monday.”
+
 
 jobs:
   scheduled:
