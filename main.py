@@ -1,9 +1,10 @@
 from collections import namedtuple
 import json
 import os
-from typing import Tuple
+from typing import List, Tuple
 from scraper.review import scrape_reviews
 import concurrent.futures
+import ray
 
 from models.reviews import Reviews
 from utils.aws import store_as_parquet
@@ -12,11 +13,12 @@ AWS_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME', "lbenninga-takeaway")
 
 RestaurantMapping = namedtuple("Mapping", ["id", "name"])
 
-handled = 0
-
+@ray.remote
 def scrape_and_store_reviews(mapping: RestaurantMapping):
+    print(f"Scraping {mapping.name}")
     reviews = scrape_reviews(mapping.id)
 
+    all_reviews = []
     for review in reviews:
         if review.comment == "":
             continue
@@ -30,20 +32,23 @@ def scrape_and_store_reviews(mapping: RestaurantMapping):
 
     res = Reviews(reviews=all_reviews)
     res.store_as_parquet(bucket=AWS_BUCKET_NAME, path=f"data/{mapping.name}")
-
-    handled += 1
-    print(f"handled {handled}")
+    print(f"Stored {mapping.name}")
 
 
+
+def get_restaurant_id_mappings() -> List[RestaurantMapping]:
+    with open("data/mapping.json", "r") as f:
+        json_map = json.load(f)
+        
+        mappings = [RestaurantMapping(*m) for m in json_map.items()][:1]
+        return mappings
 
 if __name__ == "__main__":
-    with open("data/mapping.json", "r") as f:
-        mapping = json.load(f)
-        all_reviews = []
-        
-        print(f"total length: {len(mapping.items())}")
-        mappings = [RestaurantMapping(*m) for m in mapping.items()]
-        # scrape_and_store_reviews(mappings[0])
-        # Scrape listings in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=100) as executor:
-            executor.map(scrape_and_store_reviews, [RestaurantMapping(*x) for x in mapping.items()])
+    ray.init()
+    mappings = get_restaurant_id_mappings()
+
+    for map in mappings:
+        scrape_and_store_reviews.remote(map)
+
+    # refs = [scrape_and_store_reviews.remote(map) for map in mappings]
+    # ray.get(refs)

@@ -32,7 +32,7 @@ headers = {
 }
 
 
-def scrape_reviews(restaurant_id: str) -> list[Reviews]:
+def scrape_reviews(restaurant_id: str, limit: int = 1) -> list[Reviews]:
     reviews = []
 
     page = 0
@@ -45,8 +45,12 @@ def scrape_reviews(restaurant_id: str) -> list[Reviews]:
             reviews_json = json.loads(response.text)
             if reviews_json["reviews"]:
                 reviews.append(Reviews(**reviews_json))
+
                 page += 1
-                time.sleep(1)
+                if page >= limit:
+                    break
+                else:
+                    time.sleep(1)
             else:
                 scraped_all = True
         else:
