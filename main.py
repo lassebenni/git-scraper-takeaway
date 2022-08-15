@@ -1,10 +1,11 @@
 from collections import namedtuple
+from datetime import datetime
 import json
 import os
 from typing import List, Tuple
 from scraper.review import scrape_reviews
-import concurrent.futures
-import ray
+from dask.distributed import Client, Variable
+
 
 from models.reviews import Reviews
 from utils.aws import store_as_parquet
@@ -13,10 +14,11 @@ AWS_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME', "lbenninga-takeaway")
 
 RestaurantMapping = namedtuple("Mapping", ["id", "name"])
 
-@ray.remote
+
 def scrape_and_store_reviews(mapping: RestaurantMapping):
     print(f"Scraping {mapping.name}")
     reviews = scrape_reviews(mapping.id)
+    print(f"Scraped reviews for {mapping.name}")
 
     all_reviews = []
     for review in reviews:
@@ -31,24 +33,31 @@ def scrape_and_store_reviews(mapping: RestaurantMapping):
         all_reviews.append(review)
 
     res = Reviews(reviews=all_reviews)
-    res.store_as_parquet(bucket=AWS_BUCKET_NAME, path=f"data/{mapping.name}")
-    print(f"Stored {mapping.name}")
 
+    if res.reviews:
+        today = datetime.today().strftime("%d-%m-%y")
+        res.store_as_parquet(bucket=AWS_BUCKET_NAME, path=f"data/{today}/{mapping.name}")
+    
+    handled = global_var.get()
+    handled += 1
+    print(handled)
+    global_var.set(handled)
 
 
 def get_restaurant_id_mappings() -> List[RestaurantMapping]:
     with open("data/mapping.json", "r") as f:
         json_map = json.load(f)
         
-        mappings = [RestaurantMapping(*m) for m in json_map.items()][:1]
+        mappings = [RestaurantMapping(*m) for m in json_map.items()]
         return mappings
 
 if __name__ == "__main__":
-    ray.init()
+    client = Client()
+    global_var = Variable(name="handled")
+    global_var.set(0)
+
     mappings = get_restaurant_id_mappings()
 
-    for map in mappings:
-        scrape_and_store_reviews.remote(map)
-
-    # refs = [scrape_and_store_reviews.remote(map) for map in mappings]
-    # ray.get(refs)
+    futures = client.map(scrape_and_store_reviews, mappings)
+    for future in futures:
+        future.result()

@@ -41,6 +41,6 @@ class Reviews(BaseModel):
         return df
 
 
-    def store_as_parquet(self, bucket: str, path: str, partitions: list[str] = ['ingestion_date']):
+    def store_as_parquet(self, bucket: str, path: str):
         df = self._to_dataframe()
-        store_as_parquet(df=df, bucket=bucket, path=path, partitions=partitions)
+        store_as_parquet(df=df, bucket=bucket, path=path)
