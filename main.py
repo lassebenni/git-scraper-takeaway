@@ -7,7 +7,7 @@ from scraper.review import scrape_reviews
 from dask.distributed import Client, Variable
 
 
-from models.reviews import Reviews
+from models.reviews import ReviewsParser
 from utils.aws import store_as_parquet
 
 AWS_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME', "lbenninga-takeaway")
@@ -15,12 +15,13 @@ AWS_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME', "lbenninga-takeaway")
 RestaurantMapping = namedtuple("Mapping", ["id", "name"])
 
 
-def scrape_and_store_reviews(mapping: RestaurantMapping):
+def scrape_and_store_reviews(parser: ReviewsParser, mapping: RestaurantMapping):
     print(f"Scraping {mapping.name}")
     reviews = scrape_reviews(mapping.id)
     print(f"Scraped reviews for {mapping.name}")
 
-    all_reviews = []
+
+
     for review in reviews:
         if review.comment == "":
             continue
@@ -30,13 +31,12 @@ def scrape_and_store_reviews(mapping: RestaurantMapping):
         review.rating_delivery = review.rating.delivery
         del review.rating
 
-        all_reviews.append(review)
+        parser.reviews.appendreviews)
 
-    res = Reviews(reviews=all_reviews)
 
-    if res.reviews:
-        today = datetime.today().strftime("%d-%m-%y")
-        res.store_as_parquet(bucket=AWS_BUCKET_NAME, path=f"data/{today}/{mapping.name}")
+    # if res.reviews:
+    #     today = datetime.today().strftime("%d-%m-%y")
+    #     res.store_as_parquet(bucket=AWS_BUCKET_NAME, path=f"data/{today}/{mapping.name}")
     
     handled = global_var.get()
     handled += 1
@@ -58,6 +58,9 @@ if __name__ == "__main__":
 
     mappings = get_restaurant_id_mappings()
 
+    reviews_scraper = 
     futures = client.map(scrape_and_store_reviews, mappings)
     for future in futures:
         future.result()
+
+    print("Finished.")
