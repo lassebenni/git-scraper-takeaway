@@ -1,10 +1,10 @@
 import time
+from typing import Dict, List
 import requests
 import json
 import itertools
 
-from models.reviews import Reviews
-
+from utils.general import flatten
 
 payload = {}
 headers = {
@@ -32,7 +32,7 @@ headers = {
 }
 
 
-def scrape_reviews(restaurant_id: str, limit: int = 0) -> list[Reviews]:
+def scrape_reviews(restaurant_id: str, limit: int = 0) -> List[Dict]:
     reviews = []
 
     page = 0
@@ -44,7 +44,7 @@ def scrape_reviews(restaurant_id: str, limit: int = 0) -> list[Reviews]:
         if response:
             reviews_json = json.loads(response.text)
             if reviews_json["reviews"]:
-                reviews.append(Reviews(**reviews_json))
+                reviews.append(reviews_json)
 
                 page += 1
                 if limit > 0 and page >= limit:
@@ -57,10 +57,4 @@ def scrape_reviews(restaurant_id: str, limit: int = 0) -> list[Reviews]:
             scraped_all = True
 
     # flatten into single list
-    reviews = flatten([x.reviews for x in reviews])
-
-    return reviews
-
-
-def flatten(list_of_lists):
-    return list(itertools.chain.from_iterable(list_of_lists))
+    return flatten([x['reviews'] for x in reviews])

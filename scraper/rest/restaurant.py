@@ -1,7 +1,6 @@
+from typing import Dict
 import requests
 import json
-
-from models.restaurant import Restaurant
 
 
 url = "https://cw-api.takeaway.com/api/v31/restaurants?deliveryAreaId=936874&postalCode=3511&lat=52.08944030000001&lng=5.1099869&limit=0&isAccurate=false"
@@ -27,11 +26,7 @@ headers = {
 }
 
 
-def scrape_restaurants() -> list[Restaurant]:
+def scrape_restaurants() -> list[Dict]:
     response = requests.request("GET", url, headers=headers, data=payload)
     print(response.status_code)
-    restaurants_json = json.loads(response.text)["restaurants"]
-
-    return [
-        Restaurant(**restaurants_json[val]) for k, val in enumerate(restaurants_json)
-    ]
+    return json.loads(response.text)["restaurants"]
