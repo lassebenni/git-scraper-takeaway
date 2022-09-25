@@ -30,6 +30,7 @@ class ReviewsParser():
             review['restaurant_name'] = restaurant_name
             review['rating_food'] = review['rating']['food']
             review['rating_delivery'] = review['rating']['delivery']
+            del review['rating']
 
             reviews.append(Review(**review))
 

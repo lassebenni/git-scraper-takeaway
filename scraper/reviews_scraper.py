@@ -31,10 +31,12 @@ class ReviewsScraper:
 
     def _scrape_in_parralel(self, mapping: RestaurantMapping) -> List[Review]:
         print(f"Scraping {mapping.name}")
-        reviews: List[Dict] = scrape_reviews(mapping.id)
+        reviews_json: List[Dict] = scrape_reviews(mapping.id)
 
-        print(f"Scraped reviews for {mapping.name}")
-        return self.parser.parse_reviews(mapping.name, reviews)
+        reviews: List[Review] = self.parser.parse_reviews(mapping.name, reviews_json)
+        print(f"Scraped {len(reviews)} reviews for {mapping.name}")
+
+        return reviews
 
     def _get_restaurant_id_mappings(self) -> List[RestaurantMapping]:
         with open("data/mapping.json", "r") as f:
