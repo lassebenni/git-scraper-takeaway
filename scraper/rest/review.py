@@ -15,7 +15,6 @@ headers = {
     "Referer": "https://www.thuisbezorgd.nl/",
     "X-Language-Code": "en",
     "X-Country-Code": "nl",
-    "X-Session-ID": "85c14822-75ed-4f70-bd0e-403e42dc7173",
     "X-Requested-With": "XMLHttpRequest",
     "x-datadog-origin": "rum",
     "x-datadog-parent-id": "892796564123353268",
@@ -28,7 +27,6 @@ headers = {
     "Sec-Fetch-Mode": "cors",
     "Sec-Fetch-Site": "cross-site",
     "TE": "trailers",
-    "Cookie": "__cf_bm=uCRKXYHao_w8eM0sXunMW0Ix8TH7CosSzn.9jXjhQko-1659476159-0-AbQWQX/i1/iB4lplWr24sLb+DBNiZi7HgMN69JrMyBG6jow7wM3ORuQl2ZwQhchCiEc3aljbR+w7dFEwu7/ZgiCv8ioAtVJG+sX+u5k7dSce",
 }
 
 
@@ -41,6 +39,8 @@ def scrape_reviews(restaurant_id: str, limit: int = 0) -> List[Dict]:
         url = f"https://cw-api.takeaway.com/api/v31/restaurant/reviews?id={restaurant_id}&page={page}"
         response = requests.request("GET", url, headers=headers, data=payload)
 
+        print(response.status_code)
+        print(response.text)
         if response:
             reviews_json = json.loads(response.text)
             if reviews_json["reviews"]:
