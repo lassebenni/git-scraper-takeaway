@@ -37,6 +37,12 @@ class ReviewsParser():
         return reviews
 
 
-    def store_reviews(self, reviews: List[Review]):
-        with open('data/scraped_reviews.json', 'w') as f:
-            json.dump([review.dict() for review in reviews], f, default=str)
+    def store_reviews(self, reviews: List[Review], append: bool = False):
+        if append:
+            mode = 'a'
+        else:
+            mode = 'w'
+        with open('data/scraped_reviews.jsonl', mode) as f:
+            for review in reviews:
+                    json.dump(review.dict(), f, default=str)
+                    f.write('\n')

@@ -26,15 +26,14 @@ class ReviewsScraper:
         for future in futures:
             future.result()
 
-        reviews: List[Review] = flatten(client.gather(futures))
-        self.parser.store_reviews(reviews)
+        # reviews: List[Review] = flatten(client.gather(futures))
 
     def _scrape_in_parralel(self, mapping: RestaurantMapping) -> List[Review]:
         print(f"Scraping {mapping.name}")
         reviews_json: List[Dict] = scrape_reviews(mapping.id)
 
         reviews: List[Review] = self.parser.parse_reviews(mapping.name, reviews_json)
-        print(f"Scraped {len(reviews)} reviews for {mapping.name}")
+        self.parser.store_reviews(reviews, append=True)
 
         return reviews
 
