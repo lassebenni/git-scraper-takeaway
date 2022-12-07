@@ -42,4 +42,4 @@ class ReviewsScraper:
         with open("data/mapping.json", "r") as f:
             json_map = json.load(f)
             mappings = [RestaurantMapping(*m) for m in json_map.items()]
-            return [mappings[0]]
+            return mappings
