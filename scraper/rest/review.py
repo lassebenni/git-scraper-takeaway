@@ -40,7 +40,6 @@ def scrape_reviews(restaurant_id: str, limit: int = 0) -> List[Dict]:
         response = requests.request("GET", url, headers=headers, data=payload)
 
         print(response.status_code)
-        print(response.text)
         if response:
             reviews_json = json.loads(response.text)
             if reviews_json["reviews"]:
